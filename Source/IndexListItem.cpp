@@ -9,7 +9,7 @@
 	the Gnu Public License. If you have a patch or new feature,
 	please let me know. mailto:will@cs.earlham.edu
 */
-
+#include <ColumnTypes.h>
 #include <View.h>
 #include <Region.h>
 #include <Font.h>
@@ -23,22 +23,18 @@
 //c++
 #include <stdio.h>
 
-#include "Colors.h"
-
-#include "CLVEasyItem.h"
-
 #include "IndexListItem.h"
 
 IndexListItem::IndexListItem(uint32 level, char* AttrName, index_info* info, bool superitem, bool expanded)
-: CLVEasyItem(level, superitem, expanded, 20.0)
+: BRow()
 {
-	SetColumnContent(0, AttrName);
-	SetColumnContent(1, GetTypeString(info->type));
-	SetColumnContent(2, GetSizeString(info->size));
-	SetColumnContent(3, GetTimeString(info->modification_time)); 
-	SetColumnContent(4, GetTimeString(info->creation_time));
-	SetColumnContent(5, GetUIDString(info->uid));
-	SetColumnContent(6, GetGIDString(info->gid));
+	SetField(new BStringField(AttrName), 0);
+	SetField(new BStringField(GetTypeString(info->type)), 1);
+	SetField(new BSizeField(info->size), 2);
+	SetField(new BDateField(&info->modification_time), 3);
+	SetField(new BDateField(&info->creation_time), 4);
+	SetField(new BStringField(GetUIDString(info->uid)), 5);
+	SetField(new BStringField(GetGIDString(info->gid)), 6);
 }
 
 

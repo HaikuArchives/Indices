@@ -14,7 +14,7 @@
 #define INDEX_H
 
 class BApplication;
-class ColumnListView;
+class BColumnListView;
 class BWindow;
 class BMessage;
 class BVolume;
@@ -44,7 +44,7 @@ class IndexWin : public BWindow
 	void _SetupView(BRect frame);
 	void _UpdateList();
 	
-	ColumnListView* displayview;
+	BColumnListView* displayview;
 	BMenuBar* menubar;
 	BVolume* TheVolume;
 };

@@ -13,9 +13,10 @@
 #ifndef INDEX_ITEMS_H
 #define INDEX_ITEMS_H
 
-#include "CLVEasyItem.h"
+#include <ColumnListView.h>
 
-class IndexListItem : public CLVEasyItem
+
+class IndexListItem : public BRow
 {
 	public:
 		IndexListItem(uint32 level, char* AttrName, index_info* info, bool superitem = false, bool expanded = false);

@@ -27,7 +27,7 @@
 #include <NodeMonitor.h>
 
 // c++
-
+#include <string.h>
 // local
 #include "IndVolItem.h"
 #include "Indices.h"
@@ -118,20 +118,12 @@ void IndicesVolWin::_SetupVolList(void)
 	BVolume myvol;
 	BListItem* listitem;
 	
-	if (displayview->IsEmpty() == false)
-	{
-		// empty list
-		while (true)
-		{
-			listitem = displayview->RemoveItem(NULL);
-			if (listitem == NULL)
-			{
-				break;
-			}
-			delete listitem;
-		}
-	}
 	
+	for (int32 i = 0; i < displayview->CountItems(); i++)
+			delete displayview->ItemAt(i);
+
+	displayview->MakeEmpty();
+
 	// make list
 	volroster->Rewind();
 	while (volroster->GetNextVolume(&myvol)!= B_BAD_VALUE)
@@ -163,6 +155,9 @@ void IndicesVolWin::AddVol(BVolume myvol)
 	char NameBuff[B_FILE_NAME_LENGTH];
 	
 	myvol.GetName(NameBuff);
+	// Skip packageManager directories
+	if (strcmp(NameBuff, "system") == 0 || strcmp(NameBuff, "config") == 0)
+		return;
 	
 	displayview->AddItem(new IndVolItem(&myvol, NameBuff));
 }
