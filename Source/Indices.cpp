@@ -14,11 +14,12 @@
 #include <Application.h>
 
 //InterfaceKit
-#include <Window.h>
+#include <Alert.h>
+#include <ColumnTypes.h>
+#include <LayoutBuilder.h>
 #include <MenuBar.h>
 #include <MenuItem.h>
-#include <Alert.h>
-
+#include <Window.h>
 //StorageKit
 #include <VolumeRoster.h>
 #include <Volume.h>
@@ -32,11 +33,7 @@
 #include <string>
 
 //ColumnListView
-#include "ColumnListView.h"
-#include "CLVColumn.h"
-
-//SGB
-#include "BetterScrollView.h"
+#include <ColumnListView.h>
 
 //local
 #include "IndexListItem.h"
@@ -47,6 +44,8 @@
 const uint32 MENU_UPDATE = 'MeUp';
 
 const char* APP_SIG = "application/x-vnd.WD-Indices";
+
+#define B_TRANSLATE(x)	x
 
 IndexApp::IndexApp()
 : BApplication(APP_SIG)
@@ -59,7 +58,7 @@ IndexApp::~IndexApp()
 }
 
 IndexWin::IndexWin(BVolume* Volume)
-: BWindow(BRect(25, 75, 550, 300), "Indices for: ", B_DOCUMENT_WINDOW, 0)
+: BWindow(BRect(25, 75, 650, 400), "Indices for: ", B_DOCUMENT_WINDOW, 0)
 {
 	char NameBuff[B_FILE_NAME_LENGTH];
 	
@@ -69,15 +68,20 @@ IndexWin::IndexWin(BVolume* Volume)
 	TheVolume = new BVolume(*Volume);
 	
 	TheVolume->GetName(NameBuff);
-	string TitleBuff = "Indices for: ";
+	std::string TitleBuff = "Indices for: ";
 	TitleBuff += NameBuff;
 	
 	SetTitle(TitleBuff.c_str());
 	
 	_SetupMenus(framerect);
 	_SetupView(framerect);
-	_UpdateList();
+
+	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
+		.Add(menubar)
+		.Add(displayview);
 	
+	_UpdateList();
+
 	Show();
 }
 
@@ -90,35 +94,25 @@ void IndexWin::_SetupMenus(BRect frame)
 	amenu->AddItem(new BMenuItem("Update List", new BMessage(MENU_UPDATE), 'U'));
 	
 	menubar->AddItem(amenu);
-	AddChild(menubar);
+	//AddChild(menubar);
 }
 
 void IndexWin::_SetupView(BRect frame)
 {
-	BetterScrollView* containerview;
-	
-	//make room for scrollbar
-	frame.right -= B_V_SCROLL_BAR_WIDTH;
-	frame.bottom -= B_H_SCROLL_BAR_HEIGHT;
-	
-	//make room for menubar
-	frame.top = menubar->Bounds().bottom + 1.0;
-	
-	displayview = new ColumnListView(frame, &containerview, "displayview", B_FOLLOW_ALL_SIDES, B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE, B_SINGLE_SELECTION_LIST, true, true, true, true, B_NO_BORDER, be_plain_font);
-
+	displayview = new BColumnListView("displayview", B_FRAME_EVENTS|B_NAVIGABLE, B_NO_BORDER);
 
 	//info columns
-	displayview->AddColumn(new CLVColumn("Name",115.0,CLV_SORT_KEYABLE|CLV_HEADER_TRUNCATE|CLV_TELL_ITEMS_WIDTH,50.0));
-	displayview->AddColumn(new CLVColumn("Type",100.0, CLV_SORT_KEYABLE|CLV_HEADER_TRUNCATE|CLV_TELL_ITEMS_WIDTH,50.0));
-	displayview->AddColumn(new CLVColumn("Size",50.0,CLV_SORT_KEYABLE|CLV_HEADER_TRUNCATE|CLV_TELL_ITEMS_WIDTH));
-	displayview->AddColumn(new CLVColumn("ModTime",108.0,CLV_SORT_KEYABLE|CLV_HEADER_TRUNCATE|CLV_TELL_ITEMS_WIDTH));
-	displayview->AddColumn(new CLVColumn("CreateTime",108.0,CLV_SORT_KEYABLE|CLV_HEADER_TRUNCATE|CLV_TELL_ITEMS_WIDTH));
-	displayview->AddColumn(new CLVColumn("UID",50.0,CLV_SORT_KEYABLE|CLV_HEADER_TRUNCATE|CLV_TELL_ITEMS_WIDTH|CLV_HIDDEN));
-	displayview->AddColumn(new CLVColumn("GID",50.0,CLV_SORT_KEYABLE|CLV_HEADER_TRUNCATE|CLV_TELL_ITEMS_WIDTH|CLV_HIDDEN));
-	
-	
+	int32 i = 0;
+	displayview->AddColumn(new BStringColumn(B_TRANSLATE("Name"), 115, 10, 600, B_TRUNCATE_END), i++);
+	displayview->AddColumn(new BStringColumn(B_TRANSLATE("Type"), 100, 10, 600, 0), i++);
+	displayview->AddColumn(new BSizeColumn(B_TRANSLATE("Size"), 50, 10, 600), i++);
+	displayview->AddColumn(new BDateColumn(B_TRANSLATE("ModTime"), 108, 10, 600), i++);
+	displayview->AddColumn(new BDateColumn(B_TRANSLATE("CreateTime"), 108, 10, 600), i++);
+	displayview->AddColumn(new BStringColumn(B_TRANSLATE("UID"), 50, 10, 600, 0), i++);
+	displayview->AddColumn(new BStringColumn(B_TRANSLATE("GID"), 50, 10, 600, 0), i++);
+
 	//this scrollview encapsulates the displayview
-	AddChild(containerview);
+	//AddChild(displayview);
 }
 
 // get the list of indices and display them
@@ -131,6 +125,8 @@ void IndexWin::_UpdateList()
 	DIR *indexdir;
 	struct dirent* ent;
 	
+	displayview->Clear();
+	/*
 	if (displayview->IsEmpty() == false)
 	{
 		// empty list
@@ -144,7 +140,7 @@ void IndexWin::_UpdateList()
 			delete listitem;
 		}
 	}
-	
+	*/
 	
 	device = TheVolume->Device(); //DevideID
 	
@@ -155,7 +151,7 @@ void IndexWin::_UpdateList()
 		
 		TheVolume->GetName(NameBuff);
 		
-		string AlertBuff = "Couldn't open index dir for volume: ";
+		std::string AlertBuff = "Couldn't open index dir for volume: ";
 		AlertBuff += NameBuff;
 		
 		BAlert* alert = new BAlert("erroralert", AlertBuff.c_str(), "Rats");
@@ -174,7 +170,7 @@ void IndexWin::_UpdateList()
 			break;
 		}
 		fs_stat_index(device, ent->d_name, &info);
-		displayview->AddItem(new IndexListItem(1, ent->d_name, &info));
+		displayview->AddRow(new IndexListItem(1, ent->d_name, &info));
 	}
 	
 	fs_close_index_dir(indexdir); 
