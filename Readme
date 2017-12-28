@@ -1,37 +1,25 @@
 Indices 0.6d Readme:
 
-Sumery:
+Summary:
 
-This is a program to display information about the indices that the BFS filesystem maintains.  It currently displays a list of the Indices present on all mounted volumes (along with type, size, modtime and creation time). However, this is an moderatly early release and more is planed.
+This is a program to display information about the indices that the BFS filesystem maintains.  It currently displays a list of the Indices present on all mounted volumes (along with type, size, modtime and creation time). However, this is a moderately early release and more are planned.
 
 Caution:
 
-THIS IS A DEVELOPMENT VERSION. It is feature incomplete .
+THIS IS A DEVELOPMENT VERSION. It is features incomplete.
 
 About BFS Indices:
 
-BFS has the capabilty to create an index on any attribute, which can then be used for fast lookups of files that have that attribute. However, the system doesn't provide an interface to its indices for the end user. Therefore, this program.
+BFS has the capability to create an index on any attribute, which can then be used for fast lookups of files that have that attribute. However, the system doesn't provide an interface to its indices for the end user. Therefore, this program.
 
 To learn more about attributes, read the BeOS user docs. 
-To learn more about BFS, read Dominic Giampaolo's exelent book _Practical file system design with the Be file system_.
-
-Compatabilty:
-
-I have only included an R3 PPC binary, but I see no reason why it shouldn't build on either platform or under R4. 
+To learn more about BFS, read Dominic Giampaolo's excellent book _Practical file system design with the Be file system_.
 
 License:
 
-Indices is distributed under the GPL, and therefor source is included in the archive. I also include Brian Tietz (btietz@biomail.ucsd.edu)'s ColumnListView (from his Santa's Gift Bag package), which has it's own separate license.
-
-To do:
-	
-	Create a smarter CLVListItem.
-
-	Make everything more font (and stringlength) aware, perhaps using liblayout.
-
+Indices is distributed under the GPL, and therefore source is included in the archive.
 
 The next step is to add index management, such as adding and deleting indices as well as finding attributes present previous to an index being created.
-
 
 ChangeLog:
 
