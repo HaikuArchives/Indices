@@ -31,7 +31,8 @@ APP_MIME_SIG = application/x-vnd.WD-Indices
 SRCS = Source/IndexListItem.cpp \
 	   Source/Indices.cpp \
 	   Source/IndicesVolWin.cpp \
-	   Source/IndVolItem.cpp
+	   Source/IndVolItem.cpp \
+	   Source/MakeIndexWindow.cpp
 
 #	Specify the resource definition files to use. Full or relative paths can be
 #	used.

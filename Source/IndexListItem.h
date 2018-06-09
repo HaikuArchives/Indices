@@ -20,15 +20,14 @@ class IndexListItem : public BRow
 {
 	public:
 		IndexListItem(uint32 level, char* AttrName, index_info* info, bool superitem = false, bool expanded = false);
-
+		int32		GetIndexType() const {return fIndexType;};
 	private:
 		const char* GetTypeString(uint32 type);
-		const char* GetSizeString(off_t size);
-		const char* GetTimeString(time_t time);
 		const char* GetUIDString(uid_t uid);
 		const char* GetGIDString(gid_t gid);
 		
 		char buf[32];
+		int32 fIndexType;
 };
 
 #endif //INDEX_ITEMS_H

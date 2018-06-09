@@ -20,6 +20,7 @@ class BMessage;
 class BVolume;
 class BRect;
 class BMenuBar;
+class BClipboard;
 
 class IndexApp : public BApplication
 {
@@ -47,6 +48,7 @@ class IndexWin : public BWindow
 	BColumnListView* displayview;
 	BMenuBar* menubar;
 	BVolume* TheVolume;
+	BClipboard* fClipboard;
 };
 
 #endif // INDEX_H

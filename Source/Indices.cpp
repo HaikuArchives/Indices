@@ -12,7 +12,7 @@
 
 //AppKit
 #include <Application.h>
-
+#include <Clipboard.h>
 //InterfaceKit
 #include <Alert.h>
 #include <ColumnTypes.h>
@@ -39,9 +39,15 @@
 #include "IndexListItem.h"
 #include "Indices.h"
 #include "IndicesVolWin.h"
+#include "MakeIndexWindow.h"
 
 //our message->what constant:
 const uint32 MENU_UPDATE = 'MeUp';
+const uint32 MENU_MKINDEX = 'MeMk';
+const uint32 MENU_RMINDEX = 'Mrmi';
+const uint32 MENU_COPYINDICES = 'MCop';
+const uint32 MENU_PASTEINDICES = 'MPas';
+const uint32 MENU_SELECTALL = 'MSeA';
 
 const char* APP_SIG = "application/x-vnd.WD-Indices";
 
@@ -79,8 +85,9 @@ IndexWin::IndexWin(BVolume* Volume)
 	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
 		.Add(menubar)
 		.Add(displayview);
-	
 	_UpdateList();
+
+	fClipboard = new BClipboard("Indices");
 
 	Show();
 }
@@ -91,10 +98,19 @@ void IndexWin::_SetupMenus(BRect frame)
 	
 	menubar = new BMenuBar(frame, "menubar");
 	amenu = new BMenu("Indices");
+	amenu->AddItem(new BMenuItem("New index", new BMessage(MENU_MKINDEX), 'N'));
+	amenu->AddItem(new BMenuItem("Remove indices", new BMessage(MENU_RMINDEX), 'R'));
+	amenu->AddSeparatorItem();
 	amenu->AddItem(new BMenuItem("Update List", new BMessage(MENU_UPDATE), 'U'));
-	
 	menubar->AddItem(amenu);
-	//AddChild(menubar);
+	amenu = new BMenu("Edit");
+	amenu->AddItem(new BMenuItem("Copy", new BMessage(MENU_COPYINDICES), 'C'));
+	amenu->AddItem(new BMenuItem("Paste", new BMessage(MENU_PASTEINDICES), 'V'));
+	amenu->AddSeparatorItem();
+	amenu->AddItem(new BMenuItem("Select all", new BMessage(MENU_SELECTALL), 'A'));
+	menubar->AddItem(amenu);
+
+
 }
 
 void IndexWin::_SetupView(BRect frame)
@@ -190,7 +206,76 @@ void IndexWin::MessageReceived(BMessage* message)
 			_UpdateList();
 		}
 		break;
-		
+		case MENU_MKINDEX:
+		{
+			(new MakeIndexWindow(TheVolume))->Show();
+			break;
+		}
+		case MENU_RMINDEX:
+		{
+			BRow* row = NULL;
+			while((row = displayview->CurrentSelection(row))) {
+				BStringField *intNameField = (BStringField *)row->GetField(0);
+				if (fs_remove_index(TheVolume->Device(), intNameField->String()) != 0)
+					fprintf(stderr, "ERROR"); // TODO Alert
+			}
+
+			_UpdateList();
+			displayview->DeselectAll();
+		}
+		case MENU_SELECTALL:
+		{
+			int32 numberOfRows = displayview->CountRows();
+			for (int32 i = 0; i < numberOfRows; i++)
+			{
+				BRow* row = displayview->RowAt(i);
+				displayview->AddToSelection(row);
+			}
+			break;
+		}
+		case MENU_COPYINDICES:
+		{
+			BMessage* clip = (BMessage *)NULL;
+			if (fClipboard->Lock()) {
+				fClipboard->Clear();
+			if (clip = fClipboard->Data()) {
+				BRow* row = NULL;
+				while((row = displayview->CurrentSelection(row))) {
+					BStringField *intNameField = (BStringField *)row->GetField(0);
+					clip->AddString("IndexName", intNameField->String());
+					clip->AddInt32("IndexType", dynamic_cast<IndexListItem*>(row)->GetIndexType());
+					printf("archive %s %d\n", intNameField->String(), dynamic_cast<IndexListItem*>(row)->GetIndexType());
+				}
+				fClipboard->Commit();
+			}
+			fClipboard->Unlock();
+			}
+			break;
+		}
+		case MENU_PASTEINDICES:
+		{
+			BMessage* clip = (BMessage *)NULL;
+			if (fClipboard->Lock()) {
+				if (clip = fClipboard->Data()) {
+					type_code typeCode;
+					int32 countFound;
+					clip->GetInfo("IndexName", &typeCode, &countFound);
+
+					for (int32 i = 0; i < countFound; i++)
+					{
+						BString indexName;
+						int32 indexType;
+						clip->FindString("IndexName", i, &indexName);
+						clip->FindInt32("IndexType", i, &indexType);
+						printf("create %s %d\n", indexName.String(), indexType);
+						if (fs_create_index(TheVolume->Device(), indexName.String(), indexType, 0) != 0)
+							fprintf(stderr, "ERROR\n"); // TODO Alert
+					}
+				}
+			}
+			_UpdateList();
+			break;
+		}
 		default:
 		{
 			BWindow::MessageReceived(message);

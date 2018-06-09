@@ -26,7 +26,8 @@
 #include "IndexListItem.h"
 
 IndexListItem::IndexListItem(uint32 level, char* AttrName, index_info* info, bool superitem, bool expanded)
-: BRow()
+: BRow(),
+  fIndexType(info->type)
 {
 	SetField(new BStringField(AttrName), 0);
 	SetField(new BStringField(GetTypeString(info->type)), 1);
@@ -79,25 +80,6 @@ const char* IndexListItem::GetTypeString(uint32 type)
 		}
 }
 
-const char* IndexListItem::GetSizeString(off_t size)
-{
-	int kbytes;
-	
-	kbytes = size / 1000;
-	
-	sprintf(buf, "%d K", kbytes);
-	return (buf);
-}
-
-const char* IndexListItem::GetTimeString(time_t time)
-{
-	struct tm* mytime;
-	
-	mytime = localtime(&time);
-	sprintf(buf, "%d/%d/%d %d:%d:%d", mytime->tm_mon+1, mytime->tm_mday, mytime->tm_year+1900, mytime->tm_hour, mytime->tm_min, mytime->tm_sec);
-	
-	return (buf);
-}
 
 const char* IndexListItem::GetUIDString(uid_t uid)
 {
