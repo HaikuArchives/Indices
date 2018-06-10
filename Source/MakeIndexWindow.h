@@ -15,7 +15,7 @@ class MakeIndexWindow : public BWindow
 {
 	public:
 	
-	MakeIndexWindow(BVolume* Volume);
+	MakeIndexWindow(BVolume* Volume, BWindow* indexWindow);
 	
 	virtual bool QuitRequested();
 	virtual void MessageReceived(BMessage* message);
@@ -24,6 +24,7 @@ class MakeIndexWindow : public BWindow
 	
 	void _UpdateCreateButton();
 
+	BWindow* fIndexWindow;
 	
 	BColumnListView* displayview;
 	BMenuBar* menubar;

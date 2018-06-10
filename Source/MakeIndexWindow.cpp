@@ -38,8 +38,9 @@ const uint32 MSG_CHANGE_NAME = 'Mchn';
 #define B_TRANSLATE(x)	x
 
 
-MakeIndexWindow::MakeIndexWindow(BVolume* Volume)
+MakeIndexWindow::MakeIndexWindow(BVolume* Volume, BWindow* indexWindow)
 : BWindow(BRect(25, 75, 350, 400), B_EMPTY_STRING, B_TITLED_WINDOW,  B_NOT_ZOOMABLE | B_NOT_RESIZABLE | B_AUTO_UPDATE_SIZE_LIMITS),
+	fIndexWindow(indexWindow),
 	fIndexType(-1)
 {
 	char NameBuff[B_FILE_NAME_LENGTH];
@@ -75,23 +76,6 @@ MakeIndexWindow::MakeIndexWindow(BVolume* Volume)
 	message->AddInt32("IndexType", B_DOUBLE_TYPE);
 	fTypeMenu->AddItem(new BMenuItem(B_TRANSLATE("Double"), message));
 
-	
-	//myMenu->ItemAt(0)->SetMarked(true);
-
-/*
-	if (strncmp("int", optarg, 3) == 0)
-					indexType = B_INT32_TYPE;
-				else if (strncmp("llong", optarg, 5) == 0)
-					indexType = B_INT64_TYPE;
-				else if (strncmp("string", optarg, 6) == 0)
-					indexType = B_STRING_TYPE;
-				else if (strncmp("float", optarg, 5) == 0)
-					indexType = B_FLOAT_TYPE;
-				else if (strncmp("double", optarg, 6) == 0)
-					indexType = B_DOUBLE_TYPE;
-				else
-					usage(1);
-*/	
 	BMenuField* menuField = new BMenuField(NULL, B_TRANSLATE("Type:"), fTypeMenu);
 	BLayoutBuilder::Group<>(this, B_VERTICAL)
 		.SetInsets(B_USE_WINDOW_SPACING, B_USE_DEFAULT_SPACING, B_USE_DEFAULT_SPACING, B_USE_DEFAULT_SPACING)
@@ -143,6 +127,7 @@ void MakeIndexWindow::MessageReceived(BMessage* message)
 				//fprintf(stderr, "%s: Could not create index: %s\n", "x", strerror(errno));
 				fprintf(stderr, "ERROR\n");
 				// TODO Alert
+			fIndexWindow->PostMessage(new BMessage('MeUp')); // use const
 			Close();
 		}
 		break;

@@ -208,18 +208,35 @@ void IndexWin::MessageReceived(BMessage* message)
 		break;
 		case MENU_MKINDEX:
 		{
-			(new MakeIndexWindow(TheVolume))->Show();
+			(new MakeIndexWindow(TheVolume, this))->Show();
 			break;
 		}
 		case MENU_RMINDEX:
 		{
+			if (displayview->CurrentSelection(NULL) == NULL)
+				break;
+			BString alertText;
+			/*
+			int32 count = 0;
+			BRow* countRow = NULL;
+			while((countRow = displayview->CurrentSelection(countRow)))
+				++count;
+
+			static BMessageFormat formatText(B_TRANSLATE("{0, plural,"
+					"=1{Deleting this index cannot be undone.\nAre you sure?}"
+					"other{Deleting these # indices cannot be undone.\nAre you sure?}}"));
+			formatText.Format(alertText, count);
+			*/
+			alertText = "Removing these indices cannot be undone.\nAre you sure?";
+			if ((new BAlert("", alertText, B_TRANSLATE("Remove"),
+				B_TRANSLATE("Cancel"), NULL, B_WIDTH_AS_USUAL, B_WARNING_ALERT))->Go() == 1)
+				break;
 			BRow* row = NULL;
 			while((row = displayview->CurrentSelection(row))) {
 				BStringField *intNameField = (BStringField *)row->GetField(0);
 				if (fs_remove_index(TheVolume->Device(), intNameField->String()) != 0)
 					fprintf(stderr, "ERROR"); // TODO Alert
 			}
-
 			_UpdateList();
 			break;
 		}
