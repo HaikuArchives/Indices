@@ -99,13 +99,13 @@ void IndexWin::_SetupMenus(BRect frame)
 	menubar = new BMenuBar(frame, "menubar");
 	amenu = new BMenu("Indices");
 	amenu->AddItem(new BMenuItem("New index", new BMessage(MENU_MKINDEX), 'N'));
-	amenu->AddItem(new BMenuItem("Remove indices", new BMessage(MENU_RMINDEX), 'R'));
+	amenu->AddItem(removeIndexItem = new BMenuItem("Remove indices", new BMessage(MENU_RMINDEX), 'R'));
 	amenu->AddSeparatorItem();
 	amenu->AddItem(new BMenuItem("Update List", new BMessage(MENU_UPDATE), 'U'));
 	menubar->AddItem(amenu);
 	amenu = new BMenu("Edit");
-	amenu->AddItem(new BMenuItem("Copy", new BMessage(MENU_COPYINDICES), 'C'));
-	amenu->AddItem(new BMenuItem("Paste", new BMessage(MENU_PASTEINDICES), 'V'));
+	amenu->AddItem(copyIndicesItem = new BMenuItem("Copy", new BMessage(MENU_COPYINDICES), 'C'));
+	amenu->AddItem(pasteIndicesItem = new BMenuItem("Paste", new BMessage(MENU_PASTEINDICES), 'V'));
 	amenu->AddSeparatorItem();
 	amenu->AddItem(new BMenuItem("Select all", new BMessage(MENU_SELECTALL), 'A'));
 	menubar->AddItem(amenu);
@@ -221,7 +221,7 @@ void IndexWin::MessageReceived(BMessage* message)
 			}
 
 			_UpdateList();
-			displayview->DeselectAll();
+			break;
 		}
 		case MENU_SELECTALL:
 		{
@@ -272,6 +272,7 @@ void IndexWin::MessageReceived(BMessage* message)
 							fprintf(stderr, "ERROR\n"); // TODO Alert
 					}
 				}
+				fClipboard->Unlock();
 			}
 			_UpdateList();
 			break;
@@ -280,6 +281,21 @@ void IndexWin::MessageReceived(BMessage* message)
 		{
 			BWindow::MessageReceived(message);
 		}
+	}
+}
+
+void IndexWin::MenusBeginning()
+{
+	if (displayview->CurrentSelection(NULL) != NULL) {
+		removeIndexItem->SetEnabled(true);
+		copyIndicesItem->SetEnabled(true);
+	} else {
+		removeIndexItem->SetEnabled(false);
+		copyIndicesItem->SetEnabled(false);
+	}
+	if (fClipboard->Lock()) {
+		pasteIndicesItem->SetEnabled(fClipboard->Data() != NULL);
+		fClipboard->Unlock();
 	}
 }
 

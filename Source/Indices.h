@@ -38,7 +38,7 @@ class IndexWin : public BWindow
 	
 	virtual bool QuitRequested();
 	virtual void MessageReceived(BMessage* message);
-	
+	virtual void MenusBeginning();
 	private:
 	
 	void _SetupMenus(BRect frame);
@@ -49,6 +49,9 @@ class IndexWin : public BWindow
 	BMenuBar* menubar;
 	BVolume* TheVolume;
 	BClipboard* fClipboard;
+	BMenuItem* removeIndexItem;
+	BMenuItem* copyIndicesItem;
+	BMenuItem* pasteIndicesItem;
 };
 
 #endif // INDEX_H
