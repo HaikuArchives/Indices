@@ -139,21 +139,6 @@ void IndexWin::_UpdateList()
 	struct dirent* ent;
 	
 	fDisplayView->Clear();
-	/*
-	if (fDisplayView->IsEmpty() == false)
-	{
-		// empty list
-		while (true)
-		{
-			listitem = fDisplayView->RemoveItem(NULL);
-			if (listitem == NULL)
-			{
-				break;
-			}
-			delete listitem;
-		}
-	}
-	*/
 	
 	device = fVolume->Device(); //DevideID
 	
@@ -308,7 +293,7 @@ void IndexWin::MenusBeginning()
 	}
 	BMessage* clip = (BMessage *)NULL;
 	if (fClipboard->Lock()) {
-		int32 countFound;
+		int32 countFound = 0;
 		if (clip = fClipboard->Data()) {
 			type_code typeCode;
 			clip->GetInfo("IndexName", &typeCode, &countFound);
