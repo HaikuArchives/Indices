@@ -25,8 +25,7 @@ class IndexListItem : public BRow
 		const char* GetTypeString(uint32 type);
 		const char* GetUIDString(uid_t uid);
 		const char* GetGIDString(gid_t gid);
-		
-		char buf[32];
+
 		int32 fIndexType;
 };
 

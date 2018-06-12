@@ -63,7 +63,7 @@ IndexApp::~IndexApp()
 {
 }
 
-IndexWin::IndexWin(BVolume* Volume)
+IndexWin::IndexWin(BVolume* volume)
 : BWindow(BRect(25, 75, 650, 400), "Indices for: ", B_DOCUMENT_WINDOW, 0)
 {
 	char NameBuff[B_FILE_NAME_LENGTH];
@@ -71,20 +71,20 @@ IndexWin::IndexWin(BVolume* Volume)
 	
 	BRect framerect = Bounds();
 	
-	TheVolume = new BVolume(*Volume);
+	fVolume = new BVolume(*volume);
 	
-	TheVolume->GetName(NameBuff);
+	fVolume->GetName(NameBuff);
 	std::string TitleBuff = "Indices for: ";
 	TitleBuff += NameBuff;
 	
 	SetTitle(TitleBuff.c_str());
 	
-	_SetupMenus(framerect);
-	_SetupView(framerect);
+	fMenuBar = _SetupMenus();
+	fDisplayView = _SetupView();
 
 	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
-		.Add(menubar)
-		.Add(displayview);
+		.Add(fMenuBar)
+		.Add(fDisplayView);
 	_UpdateList();
 
 	fClipboard = new BClipboard("Indices");
@@ -92,43 +92,40 @@ IndexWin::IndexWin(BVolume* Volume)
 	Show();
 }
 
-void IndexWin::_SetupMenus(BRect frame)
+BMenuBar* IndexWin::_SetupMenus()
 {
 	BMenu* amenu;
-	
-	menubar = new BMenuBar(frame, "menubar");
-	amenu = new BMenu("Indices");
-	amenu->AddItem(new BMenuItem("New index", new BMessage(MENU_MKINDEX), 'N'));
-	amenu->AddItem(removeIndexItem = new BMenuItem("Remove indices", new BMessage(MENU_RMINDEX), 'R'));
+	BMenuBar* menuBar = new BMenuBar("menubar");
+	amenu = new BMenu(B_TRANSLATE("Indices"));
+	amenu->AddItem(new BMenuItem(B_TRANSLATE("New index"), new BMessage(MENU_MKINDEX), 'N'));
+	amenu->AddItem(fRemoveIndexItem = new BMenuItem(B_TRANSLATE("Remove indices"), new BMessage(MENU_RMINDEX), 'R'));
 	amenu->AddSeparatorItem();
-	amenu->AddItem(new BMenuItem("Update List", new BMessage(MENU_UPDATE), 'U'));
-	menubar->AddItem(amenu);
-	amenu = new BMenu("Edit");
-	amenu->AddItem(copyIndicesItem = new BMenuItem("Copy", new BMessage(MENU_COPYINDICES), 'C'));
-	amenu->AddItem(pasteIndicesItem = new BMenuItem("Paste", new BMessage(MENU_PASTEINDICES), 'V'));
+	amenu->AddItem(new BMenuItem(B_TRANSLATE("Update List"), new BMessage(MENU_UPDATE), 'U'));
+	menuBar->AddItem(amenu);
+	amenu = new BMenu(B_TRANSLATE("Edit"));
+	amenu->AddItem(fCopyIndicesItem = new BMenuItem(B_TRANSLATE("Copy"), new BMessage(MENU_COPYINDICES), 'C'));
+	amenu->AddItem(fPasteIndicesItem = new BMenuItem(B_TRANSLATE("Paste"), new BMessage(MENU_PASTEINDICES), 'V'));
 	amenu->AddSeparatorItem();
-	amenu->AddItem(new BMenuItem("Select all", new BMessage(MENU_SELECTALL), 'A'));
-	menubar->AddItem(amenu);
-
-
+	amenu->AddItem(new BMenuItem(B_TRANSLATE("Select all"), new BMessage(MENU_SELECTALL), 'A'));
+	menuBar->AddItem(amenu);
+	return menuBar;
 }
 
-void IndexWin::_SetupView(BRect frame)
+BColumnListView* IndexWin::_SetupView()
 {
-	displayview = new BColumnListView("displayview", B_FRAME_EVENTS|B_NAVIGABLE, B_NO_BORDER);
+	BColumnListView* displayView = new BColumnListView("DisplayView", B_FRAME_EVENTS|B_NAVIGABLE, B_NO_BORDER);
 
 	//info columns
 	int32 i = 0;
-	displayview->AddColumn(new BStringColumn(B_TRANSLATE("Name"), 115, 10, 600, B_TRUNCATE_END), i++);
-	displayview->AddColumn(new BStringColumn(B_TRANSLATE("Type"), 100, 10, 600, 0), i++);
-	displayview->AddColumn(new BSizeColumn(B_TRANSLATE("Size"), 50, 10, 600), i++);
-	displayview->AddColumn(new BDateColumn(B_TRANSLATE("ModTime"), 108, 10, 600), i++);
-	displayview->AddColumn(new BDateColumn(B_TRANSLATE("CreateTime"), 108, 10, 600), i++);
-	displayview->AddColumn(new BStringColumn(B_TRANSLATE("UID"), 50, 10, 600, 0), i++);
-	displayview->AddColumn(new BStringColumn(B_TRANSLATE("GID"), 50, 10, 600, 0), i++);
+	displayView->AddColumn(new BStringColumn(B_TRANSLATE("Name"), 115, 10, 600, B_TRUNCATE_END), i++);
+	displayView->AddColumn(new BStringColumn(B_TRANSLATE("Type"), 100, 10, 600, 0), i++);
+	displayView->AddColumn(new BSizeColumn(B_TRANSLATE("Size"), 50, 10, 600), i++);
+	displayView->AddColumn(new BDateColumn(B_TRANSLATE("ModTime"), 108, 10, 600), i++);
+	displayView->AddColumn(new BDateColumn(B_TRANSLATE("CreateTime"), 108, 10, 600), i++);
+	displayView->AddColumn(new BStringColumn(B_TRANSLATE("UID"), 50, 10, 600, 0), i++);
+	displayView->AddColumn(new BStringColumn(B_TRANSLATE("GID"), 50, 10, 600, 0), i++);
 
-	//this scrollview encapsulates the displayview
-	//AddChild(displayview);
+	return displayView;
 }
 
 // get the list of indices and display them
@@ -141,14 +138,14 @@ void IndexWin::_UpdateList()
 	DIR *indexdir;
 	struct dirent* ent;
 	
-	displayview->Clear();
+	fDisplayView->Clear();
 	/*
-	if (displayview->IsEmpty() == false)
+	if (fDisplayView->IsEmpty() == false)
 	{
 		// empty list
 		while (true)
 		{
-			listitem = displayview->RemoveItem(NULL);
+			listitem = fDisplayView->RemoveItem(NULL);
 			if (listitem == NULL)
 			{
 				break;
@@ -158,14 +155,14 @@ void IndexWin::_UpdateList()
 	}
 	*/
 	
-	device = TheVolume->Device(); //DevideID
+	device = fVolume->Device(); //DevideID
 	
 	indexdir = fs_open_index_dir(device);
 	if (indexdir == NULL)
 	{
 		char NameBuff[B_FILE_NAME_LENGTH];
 		
-		TheVolume->GetName(NameBuff);
+		fVolume->GetName(NameBuff);
 		
 		std::string AlertBuff = "Couldn't open index dir for volume: ";
 		AlertBuff += NameBuff;
@@ -186,7 +183,7 @@ void IndexWin::_UpdateList()
 			break;
 		}
 		fs_stat_index(device, ent->d_name, &info);
-		displayview->AddRow(new IndexListItem(1, ent->d_name, &info));
+		fDisplayView->AddRow(new IndexListItem(1, ent->d_name, &info));
 	}
 	
 	fs_close_index_dir(indexdir); 
@@ -208,18 +205,18 @@ void IndexWin::MessageReceived(BMessage* message)
 		break;
 		case MENU_MKINDEX:
 		{
-			(new MakeIndexWindow(TheVolume, this))->Show();
+			(new MakeIndexWindow(fVolume, this))->Show();
 			break;
 		}
 		case MENU_RMINDEX:
 		{
-			if (displayview->CurrentSelection(NULL) == NULL)
+			if (fDisplayView->CurrentSelection(NULL) == NULL)
 				break;
 			BString alertText;
 			/*
 			int32 count = 0;
 			BRow* countRow = NULL;
-			while((countRow = displayview->CurrentSelection(countRow)))
+			while((countRow = fDisplayView->CurrentSelection(countRow)))
 				++count;
 
 			static BMessageFormat formatText(B_TRANSLATE("{0, plural,"
@@ -232,9 +229,9 @@ void IndexWin::MessageReceived(BMessage* message)
 				B_TRANSLATE("Cancel"), NULL, B_WIDTH_AS_USUAL, B_WARNING_ALERT))->Go() == 1)
 				break;
 			BRow* row = NULL;
-			while((row = displayview->CurrentSelection(row))) {
+			while((row = fDisplayView->CurrentSelection(row))) {
 				BStringField *intNameField = (BStringField *)row->GetField(0);
-				if (fs_remove_index(TheVolume->Device(), intNameField->String()) != 0)
+				if (fs_remove_index(fVolume->Device(), intNameField->String()) != 0)
 					fprintf(stderr, "ERROR"); // TODO Alert
 			}
 			_UpdateList();
@@ -242,11 +239,11 @@ void IndexWin::MessageReceived(BMessage* message)
 		}
 		case MENU_SELECTALL:
 		{
-			int32 numberOfRows = displayview->CountRows();
+			int32 numberOfRows = fDisplayView->CountRows();
 			for (int32 i = 0; i < numberOfRows; i++)
 			{
-				BRow* row = displayview->RowAt(i);
-				displayview->AddToSelection(row);
+				BRow* row = fDisplayView->RowAt(i);
+				fDisplayView->AddToSelection(row);
 			}
 			break;
 		}
@@ -257,7 +254,7 @@ void IndexWin::MessageReceived(BMessage* message)
 				fClipboard->Clear();
 			if (clip = fClipboard->Data()) {
 				BRow* row = NULL;
-				while((row = displayview->CurrentSelection(row))) {
+				while((row = fDisplayView->CurrentSelection(row))) {
 					BStringField *intNameField = (BStringField *)row->GetField(0);
 					clip->AddString("IndexName", intNameField->String());
 					clip->AddInt32("IndexType", dynamic_cast<IndexListItem*>(row)->GetIndexType());
@@ -277,7 +274,6 @@ void IndexWin::MessageReceived(BMessage* message)
 					type_code typeCode;
 					int32 countFound;
 					clip->GetInfo("IndexName", &typeCode, &countFound);
-
 					for (int32 i = 0; i < countFound; i++)
 					{
 						BString indexName;
@@ -285,7 +281,7 @@ void IndexWin::MessageReceived(BMessage* message)
 						clip->FindString("IndexName", i, &indexName);
 						clip->FindInt32("IndexType", i, &indexType);
 						printf("create %s %d\n", indexName.String(), indexType);
-						if (fs_create_index(TheVolume->Device(), indexName.String(), indexType, 0) != 0)
+						if (fs_create_index(fVolume->Device(), indexName.String(), indexType, 0) != 0)
 							fprintf(stderr, "ERROR\n"); // TODO Alert
 					}
 				}
@@ -303,15 +299,21 @@ void IndexWin::MessageReceived(BMessage* message)
 
 void IndexWin::MenusBeginning()
 {
-	if (displayview->CurrentSelection(NULL) != NULL) {
-		removeIndexItem->SetEnabled(true);
-		copyIndicesItem->SetEnabled(true);
+	if (fDisplayView->CurrentSelection(NULL) != NULL) {
+		fRemoveIndexItem->SetEnabled(true);
+		fCopyIndicesItem->SetEnabled(true);
 	} else {
-		removeIndexItem->SetEnabled(false);
-		copyIndicesItem->SetEnabled(false);
+		fRemoveIndexItem->SetEnabled(false);
+		fCopyIndicesItem->SetEnabled(false);
 	}
+	BMessage* clip = (BMessage *)NULL;
 	if (fClipboard->Lock()) {
-		pasteIndicesItem->SetEnabled(fClipboard->Data() != NULL);
+		int32 countFound;
+		if (clip = fClipboard->Data()) {
+			type_code typeCode;
+			clip->GetInfo("IndexName", &typeCode, &countFound);
+		}
+		fPasteIndicesItem->SetEnabled(countFound > 0);
 		fClipboard->Unlock();
 	}
 }

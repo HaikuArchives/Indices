@@ -41,17 +41,17 @@ class IndexWin : public BWindow
 	virtual void MenusBeginning();
 	private:
 	
-	void _SetupMenus(BRect frame);
-	void _SetupView(BRect frame);
+	BMenuBar* _SetupMenus();
+	BColumnListView* _SetupView();
 	void _UpdateList();
 	
-	BColumnListView* displayview;
-	BMenuBar* menubar;
-	BVolume* TheVolume;
+	BColumnListView* fDisplayView;
+	BMenuBar* fMenuBar;
+	BVolume* fVolume;
 	BClipboard* fClipboard;
-	BMenuItem* removeIndexItem;
-	BMenuItem* copyIndicesItem;
-	BMenuItem* pasteIndicesItem;
+	BMenuItem* fRemoveIndexItem;
+	BMenuItem* fCopyIndicesItem;
+	BMenuItem* fPasteIndicesItem;
 };
 
 #endif // INDEX_H
