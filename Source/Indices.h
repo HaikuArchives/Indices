@@ -20,6 +20,7 @@ class BMessage;
 class BVolume;
 class BRect;
 class BMenuBar;
+class BClipboard;
 
 class IndexApp : public BApplication
 {
@@ -37,7 +38,7 @@ class IndexWin : public BWindow
 	
 	virtual bool QuitRequested();
 	virtual void MessageReceived(BMessage* message);
-	
+	virtual void MenusBeginning();
 	private:
 	
 	void _SetupMenus(BRect frame);
@@ -47,6 +48,10 @@ class IndexWin : public BWindow
 	BColumnListView* displayview;
 	BMenuBar* menubar;
 	BVolume* TheVolume;
+	BClipboard* fClipboard;
+	BMenuItem* removeIndexItem;
+	BMenuItem* copyIndicesItem;
+	BMenuItem* pasteIndicesItem;
 };
 
 #endif // INDEX_H
