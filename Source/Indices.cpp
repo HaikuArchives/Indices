@@ -68,9 +68,6 @@ IndexWin::IndexWin(BVolume* volume)
 {
 	char NameBuff[B_FILE_NAME_LENGTH];
 	
-	
-	BRect framerect = Bounds();
-	
 	fVolume = new BVolume(*volume);
 	
 	fVolume->GetName(NameBuff);
@@ -84,6 +81,7 @@ IndexWin::IndexWin(BVolume* volume)
 
 	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
 		.Add(fMenuBar)
+		.SetInsets(0, 0, -1, -1)
 		.Add(fDisplayView);
 	_UpdateList();
 
