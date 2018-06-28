@@ -10,6 +10,7 @@ class BMessage;
 class BVolume;
 class BRect;
 class BMenuBar;
+class BPopUpMenu;
 
 class MakeIndexWindow : public BWindow
 {
