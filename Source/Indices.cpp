@@ -1,10 +1,10 @@
 /*
 	Indices.cpp
-	
+
 	Copyright Will Dyson
-	
+
 	Created: 01/06/99 19:05:21
-	
+
 	This program is freely distributable under the terms of
 	the Gnu Public License. If you have a patch or new feature,
 	please let me know. mailto:will@cs.earlham.edu
@@ -67,15 +67,15 @@ IndexWin::IndexWin(BVolume* volume)
 : BWindow(BRect(25, 75, 650, 400), "Indices for: ", B_DOCUMENT_WINDOW, 0)
 {
 	char NameBuff[B_FILE_NAME_LENGTH];
-	
+
 	fVolume = new BVolume(*volume);
-	
+
 	fVolume->GetName(NameBuff);
 	std::string TitleBuff = "Indices for: ";
 	TitleBuff += NameBuff;
-	
+
 	SetTitle(TitleBuff.c_str());
-	
+
 	fMenuBar = _SetupMenus();
 	fDisplayView = _SetupView();
 
@@ -131,32 +131,32 @@ void IndexWin::_UpdateList()
 {
 	index_info info; // used for getting info on indices
 	dev_t device;
-	
+
 	BListItem* listitem;
 	DIR *indexdir;
 	struct dirent* ent;
-	
+
 	fDisplayView->Clear();
-	
+
 	device = fVolume->Device(); //DevideID
-	
+
 	indexdir = fs_open_index_dir(device);
 	if (indexdir == NULL)
 	{
 		char NameBuff[B_FILE_NAME_LENGTH];
-		
+
 		fVolume->GetName(NameBuff);
-		
+
 		std::string AlertBuff = "Couldn't open index dir for volume: ";
 		AlertBuff += NameBuff;
-		
+
 		BAlert* alert = new BAlert("erroralert", AlertBuff.c_str(), "Rats");
 		alert->Go();
-		
+
 		//Close();
 		return;
 	}
-	
+
 	// get and pack the items
 	while (true)
 	{
@@ -168,8 +168,8 @@ void IndexWin::_UpdateList()
 		fs_stat_index(device, ent->d_name, &info);
 		fDisplayView->AddRow(new IndexListItem(1, ent->d_name, &info));
 	}
-	
-	fs_close_index_dir(indexdir); 
+
+	fs_close_index_dir(indexdir);
 }
 
 bool IndexWin::QuitRequested()
@@ -202,7 +202,7 @@ void IndexWin::MessageReceived(BMessage* message)
 			while((countRow = fDisplayView->CurrentSelection(countRow)))
 				++count;
 
-			static BMessageFormat formatText(B_TRANSLATE("{0, plural,"
+			static BStringFormat formatText(B_TRANSLATE("{0, plural,"
 					"=1{Deleting this index cannot be undone.\nAre you sure?}"
 					"other{Deleting these # indices cannot be undone.\nAre you sure?}}"));
 			formatText.Format(alertText, count);
